@@ -7,6 +7,9 @@
 /*_kokkos.h
 /*_kokkos.cpp
 
+# Required dummy accelerator interface for non-KOKKOS builds
+!/accelerator_kokkos.h
+
 /kokkos.cpp
 /kokkos.h
 /kokkos_base.h
@@ -35,4 +38,3 @@
 /remap2d.h
 /remap3d.cpp
 /remap3d.h
-
