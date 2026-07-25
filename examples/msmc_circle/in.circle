@@ -1,0 +1,68 @@
+################################################################################
+# SPARTA-MSMC V1.0 example
+# Hypersonic argon flow past a two-dimensional half-cylinder
+#
+# The base Cartesian grid contains 50 x 25 cells. Two nested refinement
+# regions reproduce the original multilevel MSMC case. The simulation runs
+# for 2000 warm-up steps and 1000 sampling steps.
+################################################################################
+
+seed                12345
+dimension           2
+global              gridcut -1.0 comm/sort yes
+
+# xlo: inflow; xhi/yhi: open; ylo: symmetry; z: periodic
+boundary            o ro p
+create_box          0.0 0.3 0.0 0.15 -0.5 0.5
+
+region              r2 block 0.030 0.250 0.000 0.100 INF INF
+region              r3 block 0.055 0.205 0.000 0.075 INF INF
+create_grid         50 25 1 levels 3 &
+                    region 2 r2 2 2 1 &
+                    region 3 r3 2 2 1 &
+                    inside any
+balance_grid        rcb part
+
+global              fnum 2.99802e14
+
+species             ar.species Ar
+mixture             flow Ar nrho 1.66556e21 vstream 4121.26 0.0 0.0 temp 217.5
+
+# Radius = 0.04 m; cylinder center = (0.13, 0.0) m
+read_surf           data.circle trans 0.13 0.0 0.0
+surf_collide        wall diffuse 1000.0 1.0
+surf_modify         all collide wall
+
+collide             msmc flow ar.msmc mode msmc
+collide_modify      vibrate no rotate no
+collide_msmc_modify pr_num 0.6666667 time_ave 0.999 reset_wmax 0.99 interpolate yes
+
+create_particles    flow n 0
+fix                 inlet emit/face flow xlo xhi yhi
+
+timestep            6.65188e-7
+stats_style         step cpu np nscoll nscheck
+stats               100
+
+# Warm-up stage
+run                 2000
+
+# Restart the timestep counter for the sampling stage.
+unfix               inlet
+reset_timestep      0
+fix                 inlet emit/face flow xlo xhi yhi
+
+compute             prop property/grid all xc yc vol
+compute             flowfield grid all flow nrho u v
+compute             thermo thermal/grid all flow temp press
+fix                 gavg ave/grid all 1 1000 1000 c_prop[*] c_flowfield[*] c_thermo[*] ave running
+dump                dgrid grid all 1000 output/circle_msmc.grid.*.dat id f_gavg[*]
+dump_modify         dgrid format float %12.5g
+
+compute             sflux surf all flow press shx shy etot
+fix                 savg ave/surf all 1 1000 1000 c_sflux[*] ave running
+dump                dsurf surf all 1000 output/circle_msmc.surf.*.dat id f_savg[*]
+dump_modify         dsurf format float %12.5g
+
+# Sampling stage
+run                 1000

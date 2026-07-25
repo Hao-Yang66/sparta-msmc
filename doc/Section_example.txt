@@ -1,0 +1,18 @@
+"Previous Section"_Section_howto.html - "SPARTA WWW Site"_sws - "SPARTA Documentation"_sd - "SPARTA Commands"_sc - "Next Section"_Section_perf.html :c
+
+:link(sws,http://sparta.sandia.gov)
+:link(sd,Manual.html)
+:link(sc,Section_commands.html#comm)
+
+:line
+
+7. Example problems :h3
+
+The SPARTA-MSMC distribution includes one self-contained example in
+examples/msmc_circle.  It models hypersonic argon flow over a
+two-dimensional half-cylinder using a 50 x 25 base grid with local
+refinement.  The directory contains the input script, gas data,
+surface geometry, MPI launcher, and MATLAB post-processing scripts.
+
+See examples/README.md and examples/msmc_circle/README.md for the
+complete build, run, output, and post-processing workflow.
